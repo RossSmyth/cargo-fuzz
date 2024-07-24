@@ -454,6 +454,16 @@ impl FuzzProject {
             cmd.arg(format!("-fork={}", run.jobs));
         }
 
+        #[cfg(target_env = "msvc")]
+        {
+            use crate::utils::{append_to_pathvar, get_asan_path};
+
+            let asan = get_asan_path().with_context(|| "could not find Address sanatizer DLL")?;
+            let new_path =
+                append_to_pathvar(asan).with_context(|| "could not get PATH variable")?;
+            cmd.env("PATH", dbg!(new_path));
+        }
+        dbg!("here");
         // When libfuzzer finds failing inputs, those inputs will end up in the
         // artifacts directory. To easily filter old artifacts from new ones,
         // get the current time, and then later we only consider files modified
